@@ -1,4 +1,4 @@
-## Deep-learning-courses
+## Deep learning
 
 Repository with my homeworks and projects from Deep learning school and Deep learning systems course.
 
