@@ -57,10 +57,8 @@ def parse_mnist(image_filesname, label_filename):
         nrows, ncols = struct.unpack(">II", f.read(8))
         data = np.frombuffer(f.read(), dtype=np.dtype(np.uint8).newbyteorder('>'))
         datax = np.float32(data.reshape((size, nrows, ncols)))
-    data_min = np.min(datax, axis=(1, 2), keepdims=True)
-    data_max = np.max(datax, axis=(1, 2), keepdims=True)
-    scaled_data = (datax - data_min) / (data_max - data_min)
-    datax = np.float32(scaled_data.reshape((size, nrows * ncols)))
+        scaled_data = (datax - np.min(datax)) / (np.max(datax) - np.min(datax))
+        datax = np.float32(scaled_data.reshape((size, nrows * ncols)))
 
     with gzip.open(label_filename, 'rb') as f:
         magic, size = struct.unpack(">II", f.read(8))
@@ -94,7 +92,7 @@ def softmax_loss(Z, y):
     ### BEGIN YOUR CODE
     
     import numpy as np
-    S = np.array([np.log(np.sum(np.exp(z - z[int(i)]))) for i, z in zip(y, Z)], dtype = np.float32)
+    S = np.array([np.log(np.sum(np.exp(z - z[int(i)]))) for i, z in zip(y, Z)])
     return np.mean(S)
     
     ### END YOUR CODE
@@ -169,10 +167,8 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
     def ReLU(M):
         return(M * (M > 0))
 
-
     def binary(M):
         return(1 * (M > 0))
-
 
     m, n = X.shape
     I = (np.arange(np.max(y)+1) == y[:, None]).astype(np.uint8)
@@ -183,6 +179,7 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
         # SGD
         Z1 = ReLU(X_batch @ W1)
         E = np.exp(Z1 @ W2).T
+
         Enorm = (E / E.sum(axis=0)).T
         G2 = Enorm - I_batch
         G1 = binary(Z1) * (G2 @ W2.T)
